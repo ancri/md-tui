@@ -498,6 +498,17 @@ mod tests {
     }
 
     #[test]
+    fn test_lowercase_query_matches_inside_capitalized_annotation() {
+        let markdown = parse_markdown(None, "A note. <Question: what happens next?>", 80);
+        let result = find_with_ref("question", markdown.words());
+
+        assert_eq!(
+            result.iter().map(|word| word.content()).join(""),
+            "<Question:"
+        );
+    }
+
+    #[test]
     fn test_search_substrings_in_parsed_markdown() {
         let markdown = parse_markdown(None, "**OOS compliance.** The function g(b1).", 80);
 
