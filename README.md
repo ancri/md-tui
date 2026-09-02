@@ -168,7 +168,7 @@ gitignore = false
 alignment = "left" # "center" | "right"
 help_menu = true # false hides it
 document_header = false # true shows the current document path
-scrollbar = true # false hides the document position indicator
+scrollbar = false # true shows the document position indicator
 
 # Inline styling
 bold_color = "reset"
