@@ -32,13 +32,11 @@ impl ResumeCache {
 
         fs::create_dir_all(&self.directory)?;
         let cache_file = self.cache_file(path);
-        let temporary_file = cache_file.with_extension(format!("tmp-{}", std::process::id()));
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
-        fs::write(&temporary_file, format!("{timestamp}\n{source_line}\n"))?;
-        fs::rename(temporary_file, cache_file)
+        fs::write(cache_file, format!("{timestamp}\n{source_line}\n"))
     }
 
     #[must_use]
@@ -55,6 +53,7 @@ impl ResumeCache {
         let canonical = Path::new(path)
             .canonicalize()
             .unwrap_or_else(|_| PathBuf::from(path));
+        // Stable 64-bit FNV-1a algorithm for deterministic path keys.
         let hash = canonical
             .to_string_lossy()
             .bytes()
