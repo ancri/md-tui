@@ -26,7 +26,7 @@ impl ResumeCache {
     }
 
     pub fn save(&self, path: &str, source_line: usize) -> io::Result<()> {
-        if !self.enabled || self.ttl.is_zero() {
+        if !self.enabled {
             return Ok(());
         }
 
@@ -41,7 +41,7 @@ impl ResumeCache {
 
     #[must_use]
     pub fn load(&self, path: &str) -> Option<usize> {
-        if !self.enabled || self.ttl.is_zero() {
+        if !self.enabled {
             return None;
         }
 
@@ -69,7 +69,7 @@ fn parse_record(contents: &str, now: SystemTime, ttl: Duration) -> Option<usize>
     let timestamp = lines.next()?.parse::<u64>().ok()?;
     let source_line = lines.next()?.parse::<usize>().ok()?;
     let saved_at = UNIX_EPOCH.checked_add(Duration::from_secs(timestamp))?;
-    if now.duration_since(saved_at).ok()? > ttl {
+    if !ttl.is_zero() && now.duration_since(saved_at).ok()? > ttl {
         return None;
     }
     Some(source_line)
@@ -95,6 +95,12 @@ mod tests {
             parse_record("1000\n123\n", now, Duration::from_secs(60)),
             None
         );
+    }
+
+    #[test]
+    fn zero_ttl_never_expires() {
+        let now = UNIX_EPOCH + Duration::from_secs(1_000_000);
+        assert_eq!(parse_record("1\n123\n", now, Duration::ZERO), Some(123));
     }
 
     #[test]
