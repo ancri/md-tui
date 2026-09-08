@@ -362,16 +362,12 @@ impl TextComponent {
 
     fn annotation_words_mut(&mut self) -> Vec<Vec<&mut Word>> {
         let mut annotations = Vec::new();
-        let mut iter = self.content.iter_mut().flatten().peekable();
-        while let Some(word) = iter.peek() {
+        for word in self.content.iter_mut().flatten() {
             if word.kind() == WordType::CriticHighlight {
-                annotations.push(
-                    iter.by_ref()
-                        .take_while(|word| word.kind() == WordType::CriticHighlight)
-                        .collect(),
-                );
-            } else {
-                iter.next();
+                if word.starts_annotation() || annotations.is_empty() {
+                    annotations.push(Vec::new());
+                }
+                annotations.last_mut().expect("annotation group").push(word);
             }
         }
         annotations
@@ -395,17 +391,15 @@ impl TextComponent {
         }
 
         let mut heights = Vec::new();
-        let mut inside_annotation = false;
         for (row, words) in self.content.iter().enumerate() {
             for word in words {
                 let highlighted =
                     matches!(word.kind(), WordType::CriticHighlight | WordType::Selected)
                         && (word.kind() != WordType::Selected
                             || word.previous_type() == WordType::CriticHighlight);
-                if highlighted && !inside_annotation {
+                if highlighted && word.starts_annotation() {
                     heights.push(self.y_offset().saturating_add(row as u16));
                 }
-                inside_annotation = highlighted;
             }
         }
         heights

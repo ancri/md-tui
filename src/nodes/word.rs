@@ -65,7 +65,6 @@ impl From<MdParseEnum> for WordType {
             | MdParseEnum::AltText
             | MdParseEnum::Quote
             | MdParseEnum::Sentence
-            | MdParseEnum::CriticBoundary
             | MdParseEnum::CriticPrefix
             | MdParseEnum::Word => WordType::Normal,
             MdParseEnum::LinkData => WordType::LinkData,
@@ -109,12 +108,14 @@ pub struct Word {
     content: String,
     word_type: WordType,
     previous_type: Option<WordType>,
+    annotation_start: bool,
 }
 
 impl Word {
     #[must_use]
     pub fn new(content: String, word_type: WordType) -> Self {
         Self {
+            annotation_start: word_type == WordType::CriticHighlight,
             word_type,
             previous_type: None,
             content,
@@ -144,6 +145,11 @@ impl Word {
         self.word_type
     }
 
+    #[must_use]
+    pub fn starts_annotation(&self) -> bool {
+        self.annotation_start
+    }
+
     pub fn set_kind(&mut self, kind: WordType) {
         self.previous_type = Some(self.word_type);
         self.word_type = kind;
@@ -170,6 +176,7 @@ impl Word {
             content: self.content.split_off(at),
             word_type: self.word_type,
             previous_type: self.previous_type,
+            annotation_start: false,
         }
     }
 }
