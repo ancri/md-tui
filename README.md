@@ -172,7 +172,7 @@ help_menu = true # false hides it
 document_header = false # true shows the current document path
 scrollbar = true # false hides the document position indicator
 remember_position = true # restore recently viewed documents at their last position
-position_cache_ttl_minutes = 60 # ignore saved positions older than this
+position_cache_ttl_minutes = 60 # ignore older positions; 0 means never expire
 
 # Inline styling
 bold_color = "reset"
